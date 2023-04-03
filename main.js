@@ -103,13 +103,13 @@ const getVerficationData = async (bearer_token) => {
 		}
 		console.log("bearer token:", bearer_token);
 		const browser = await firefox.launch({
-			headless: false,
+			headless: true,
 			slowMo: 100,
-			proxy: {
-				server: `${"142.214.180.75"}:${"8800"}`,
-				username: "163096",
-				password: "wCZpMhQ8fuj8",
-			},
+			// proxy: {
+			// 	server: `${"142.214.180.75"}:${"8800"}`,
+			// 	username: "163096",
+			// 	password: "wCZpMhQ8fuj8",
+			// },
 		});
 		const context = await browser.newContext();
 		const page = await context.newPage();
@@ -119,34 +119,38 @@ const getVerficationData = async (bearer_token) => {
 		);
 
 		// await page.mouse.click(Math.floor(Math.random() * 100), Math.floor(Math.random() * 100))
+		console.log("################ First Name ################");
 		await page.focus("//*[@name='firstName']");
 		await page.click("//*[@name='firstName']");
-		await page.type("//*[@name='firstName']", "Gowri");
+		await page.type("//*[@name='firstName']", "Gowri", { delay: 100 });
 		await new Promise((r) => setTimeout(r, 2000));
 
+		console.log("################ Last Name ################");
 		await page.focus("//*[@name='lastName']");
 		await page.click("//*[@name='lastName']");
-		await page.type("//*[@name='lastName']", "Sankar");
+		await page.type("//*[@name='lastName']", "Sankar", { delay: 100 });
 		await new Promise((r) => setTimeout(r, 2000));
 
+		console.log("################  UserName ################");
 		const username = getRandomUsername();
 		await page.focus("//*[@name='Username']");
 		await page.click("//*[@name='Username']");
-		await page.type("//*[@name='Username']", username);
+		await page.type("//*[@name='Username']", username, { delay: 100 });
 		await new Promise((r) => setTimeout(r, 2000));
 		console.log("username:", username);
 
+		console.log("################ password ################");
 		const password = generatePassword();
 		await page.focus("//*[@name='Passwd']");
 		await page.click("//*[@name='Passwd']");
-		await page.type("//*[@name='Passwd']", password);
+		await page.type("//*[@name='Passwd']", password, { delay: 100 });
 		await new Promise((r) => setTimeout(r, 2000));
 
 		console.log("Password", password);
 
 		await page.focus("//*[@name='ConfirmPasswd']");
 		await page.click("//*[@name='ConfirmPasswd']");
-		await page.type("//*[@name='ConfirmPasswd']", password);
+		await page.type("//*[@name='ConfirmPasswd']", password, { delay: 100 });
 		await new Promise((r) => setTimeout(r, 2000));
 
 		const nextButton = await page.$(
@@ -159,12 +163,16 @@ const getVerficationData = async (bearer_token) => {
 			"################ Get Phone Number from Text Verified ################"
 		);
 		const verificationData = await getVerficationData(bearer_token);
+		if (!verificationData) {
+			return;
+		}
 		console.log("Vefication Data", verificationData);
 		await page.focus("//*[@id='phoneNumberId']");
 		await page.click("//*[@id='phoneNumberId']");
 		await page.type(
 			"//*[@id='phoneNumberId']",
-			`+1${verificationData?.number}`
+			`+1${verificationData?.number}`,
+			{ delay: 100 }
 		);
 		await new Promise((r) => setTimeout(r, 2000));
 
@@ -174,26 +182,30 @@ const getVerficationData = async (bearer_token) => {
 		await page.waitForLoadState();
 
 		const code = await getCode(bearer_token, verificationData?.id);
+		if (!code) {
+			return;
+		}
+		console.log("################ Verificatin Code ################");
 		await page.focus('//input[@name="code"]');
 		await page.click('//input[@name="code"]');
-		await page.type('//input[@name="code"]', code);
+		await page.type('//input[@name="code"]', code, { delay: 100 });
 		await new Promise((r) => setTimeout(r, 2000));
 
 		const NextButton = await page.$("//button");
 		NextButton.click();
 
 		await page.waitForLoadState();
-
+		console.log("################ Day ################");
 		await page.focus('//input[@name="day"]');
 		await page.click('//input[@name="day"]');
-		await page.type('//input[@name="day"]', "29");
+		await page.type('//input[@name="day"]', "29", { delay: 100 });
 		await new Promise((r) => setTimeout(r, 2000));
-
+		console.log("################ Year ################");
 		await page.focus('//input[@name="year"]');
 		await page.click('//input[@name="year"]');
-		await page.type('//input[@name="year"]', "1997");
+		await page.type('//input[@name="year"]', "1997", { delay: 100 });
 		await new Promise((r) => setTimeout(r, 2000));
-
+		console.log("################ Gender and Month ################");
 		await page.locator('xpath=//select[@id="gender"]').selectOption("1");
 		await page.locator('xpath=//select[@id="month"]').selectOption("7");
 		const nxtButton = await page.$("//button");
@@ -201,6 +213,7 @@ const getVerficationData = async (bearer_token) => {
 
 		await page.waitForLoadState();
 		await new Promise((r) => setTimeout(r, 5000));
+		console.log("################ I am In ################");
 		await page
 			.locator(
 				"xpath=//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 qIypjc TrZEUc lw1w4b']"
@@ -214,7 +227,7 @@ const getVerficationData = async (bearer_token) => {
 			window.scrollTo(0, document.body.scrollHeight);
 		});
 		await new Promise((r) => setTimeout(r, 3000));
-
+		console.log("################ Agree Button ################");
 		const aggreeButton = await page.$(
 			"//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 qIypjc TrZEUc lw1w4b']"
 		);
@@ -225,9 +238,9 @@ const getVerficationData = async (bearer_token) => {
 		await new Promise((r) => setTimeout(r, 10000));
 
 		console.log("################ Save to Report.txt ################");
-		fs.writeFile(
+		fs.appendFile(
 			"report.txt",
-			`Username:${username}\t\tPassword:${password}\t\tMobileNumber:${verificationData?.number}`,
+			`\nUsername:${username}\t\tPassword:${password}\t\tMobileNumber:${verificationData?.number}`,
 			function (err) {
 				if (err) return console.error(err);
 				console.log("Added the results to the report.");
