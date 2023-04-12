@@ -1,9 +1,14 @@
 const { firefox } = require("playwright");
 const axios = require("axios");
+const https = require("https");
+
 const fs = require("fs");
+const MAX_EMAILS = 3;
 const getRandomUsername = () => {
 	return `gowri.sankar.${Math.floor(Date.now() * Math.random())}`;
 };
+axios.defaults.timeout = 30000;
+axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });
 
 function generatePassword() {
 	var length = 8,
@@ -95,7 +100,7 @@ const getVerficationData = async (bearer_token) => {
 	}
 };
 
-(async () => {
+const createEmail = async () => {
 	try {
 		const bearer_token = await getBearerToken();
 		if (!bearer_token) {
@@ -249,5 +254,15 @@ const getVerficationData = async (bearer_token) => {
 		await browser.close();
 	} catch (error) {
 		console.error(error.message);
+	}
+};
+
+(async () => {
+	let count = 0;
+	while (true) {
+		if (count === MAX_EMAILS) {
+			break;
+		}
+		await createEmail();
 	}
 })();
