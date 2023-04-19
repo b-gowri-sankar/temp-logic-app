@@ -1,11 +1,13 @@
 const { firefox } = require("playwright");
 const axios = require("axios");
 const https = require("https");
+const moment = require("moment");
+const sql = require("mssql");
 
 const fs = require("fs");
 const MAX_EMAILS = 3;
-const getRandomUsername = () => {
-	return `gowri.sankar.${Math.floor(Date.now() * Math.random())}`;
+const getRandomUsername = (firstName, lastName) => {
+	return `${firstName}.${lastName}.${Math.floor(Date.now() * Math.random())}`;
 };
 axios.defaults.timeout = 30000;
 axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });
@@ -47,6 +49,7 @@ async function getCode(bearer_token, verificationId) {
 	console.log(
 		"################ Get SMS Code from TEXTVERIFIED ################"
 	);
+	const MAX_RETRY = 10;
 
 	let output;
 	var config = {
@@ -58,7 +61,12 @@ async function getCode(bearer_token, verificationId) {
 				"_i=h3%2B747rRKmhErMdsUTPQ3s0yiA%2FaZZChQ1KjYBSddHWKUWkITZ60sCJLj1ocPKHKZQKoG9legy0JKQITxO4ticA3vQqDYaU3V9XQZgMPfMkCLdN0; _sessid=ny24Wuz2UU35nbCqcFIo5Q; _tmSessionCtx=N5aHnnD19LwgqMp7NOroCgr7BnA87RKss789RiYzKEKAA4TodoknfLVDPCNIasqRgg",
 		},
 	};
+	let i = 0;
 	while (true) {
+		if (i === MAX_RETRY) {
+			return "";
+			break;
+		}
 		const response = await axios(config);
 		console.log(response.data);
 		if (response?.data?.code) {
@@ -66,9 +74,56 @@ async function getCode(bearer_token, verificationId) {
 			break;
 		}
 		await new Promise((r) => setTimeout(r, 2000));
+		i++;
 	}
 	return output;
 }
+
+const getCodeFromSMSMAN = async (id) => {
+	try {
+		const MAX_RETRY = 10;
+
+		let output;
+		var config = {
+			method: "get",
+			url: `http://api.sms-man.com/control/get-sms?token=8KX68ljLpJMGayWJYvRGS09tfVAtsNPA&request_id=${id}`,
+			headers: {},
+		};
+		let i = 0;
+
+		while (true) {
+			if (i === MAX_RETRY) {
+				break;
+			}
+			const response = await axios(config);
+			console.log(response.data);
+			if (response?.data?.sms_code) {
+				output = response?.data?.sms_code;
+				break;
+			}
+			await new Promise((r) => setTimeout(r, 2000));
+			i++;
+		}
+	} catch (error) {
+		console.error(error);
+	}
+};
+
+const createRequestSMSMAN = async () => {
+	try {
+		var config = {
+			method: "get",
+			url: "http://api.sms-man.com/control/get-number?token=8KX68ljLpJMGayWJYvRGS09tfVAtsNPA&country_id=5&application_id=122",
+			headers: {},
+		};
+		const response = await axios(config);
+		if (response?.data) {
+			return response.data;
+		}
+	} catch (error) {
+		console.error(error);
+	}
+};
 
 const getVerficationData = async (bearer_token) => {
 	try {
@@ -100,44 +155,208 @@ const getVerficationData = async (bearer_token) => {
 	}
 };
 
-const createEmail = async () => {
+const createEmail = async ({
+	FirstName,
+	LastName,
+	Username,
+	Password,
+	MobileNumber,
+	DateOfBirth,
+	GenderId,
+	Id,
+}) => {
+	const browser = await firefox.launch({
+		headless: false,
+		slowMo: 100,
+		// proxy: {
+		// 	server: `${"142.214.180.75"}:${"8800"}`,
+		// 	username: "163096",
+		// 	password: "wCZpMhQ8fuj8",
+		// },
+	});
 	try {
 		const bearer_token = await getBearerToken();
 		if (!bearer_token) {
 			return;
 		}
 		console.log("bearer token:", bearer_token);
-		const browser = await firefox.launch({
-			headless: true,
-			slowMo: 100,
-			// proxy: {
-			// 	server: `${"142.214.180.75"}:${"8800"}`,
-			// 	username: "163096",
-			// 	password: "wCZpMhQ8fuj8",
-			// },
-		});
+
 		const context = await browser.newContext();
 		const page = await context.newPage();
 
 		await page.goto(
 			"https://accounts.google.com/signup/v2/webcreateaccount?flowName=GlifWebSignIn&flowEntry=SignUp"
 		);
+		await page.waitForLoadState();
+		const isUserNameIsVisible = await page
+			.locator("//*[@name='Username']")
+			.isVisible();
+		if (!isUserNameIsVisible) {
+			console.log("################ First Name ################");
+			await page.focus("//*[@name='firstName']");
+			await page.click("//*[@name='firstName']");
+			await page.type(
+				"//*[@name='firstName']",
+				FirstName ? FirstName : "John",
+				{ delay: 100 }
+			);
+			await new Promise((r) => setTimeout(r, 2000));
+
+			console.log("################ Last Name ################");
+			await page.focus("//*[@name='lastName']");
+			await page.click("//*[@name='lastName']");
+			await page.type("//*[@name='lastName']", LastName ? LastName : "Doe", {
+				delay: 100,
+			});
+			await new Promise((r) => setTimeout(r, 2000));
+
+			const nextButton = await page.$(
+				"//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 qIypjc TrZEUc lw1w4b']"
+			);
+			nextButton.click();
+
+			await page.waitForLoadState();
+
+			await page.focus('//input[@name="day"]');
+			await page.click('//input[@name="day"]');
+			await page.type('//input[@name="day"]', "29", { delay: 100 });
+			await new Promise((r) => setTimeout(r, 2000));
+			console.log("################ Year ################");
+			await page.focus('//input[@name="year"]');
+			await page.click('//input[@name="year"]');
+			await page.type('//input[@name="year"]', "1997", { delay: 100 });
+			await new Promise((r) => setTimeout(r, 2000));
+			console.log("################ Gender and Month ################");
+			await page.locator('xpath=//select[@id="gender"]').selectOption("1");
+			await page.locator('xpath=//select[@id="month"]').selectOption("7");
+
+			const btn2 = await page.$(
+				"//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 qIypjc TrZEUc lw1w4b']"
+			);
+			btn2.click();
+			await page.waitForLoadState();
+			const username = getRandomUsername();
+			await page.focus("//*[@name='Username']");
+			await page.click("//*[@name='Username']");
+			await page.type("//*[@name='Username']", username, { delay: 100 });
+			await new Promise((r) => setTimeout(r, 2000));
+			console.log("username:", username);
+			const btn3 = await page.$(
+				"//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 qIypjc TrZEUc lw1w4b']"
+			);
+			btn3.click();
+			await page.waitForLoadState();
+			await page.focus("//*[@name='Passwd']");
+			await page.click("//*[@name='Passwd']");
+			await page.type("//*[@name='Passwd']", password, { delay: 100 });
+			await new Promise((r) => setTimeout(r, 2000));
+
+			await page.focus("//*[@name='PasswdAgain']");
+			await page.click("//*[@name='PasswdAgain']");
+			await page.type("//*[@name='PasswdAgain']", password, { delay: 100 });
+			await new Promise((r) => setTimeout(r, 2000));
+
+			await page.waitForLoadState();
+			console.log(
+				"################ Get Phone Number from Text Verified ################"
+			);
+			const verificationData = await getVerficationData(bearer_token);
+			if (!verificationData) {
+				return;
+			}
+			console.log("Vefication Data", verificationData);
+			await page.focus("//*[@id='phoneNumberId']");
+			await page.click("//*[@id='phoneNumberId']");
+			await page.type(
+				"//*[@id='phoneNumberId']",
+				`+1${verificationData?.number}`,
+				{ delay: 100 }
+			);
+			await new Promise((r) => setTimeout(r, 2000));
+
+			const btn4 = await page.$(
+				"//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 qIypjc TrZEUc lw1w4b']"
+			);
+			btn4.click();
+
+			await page.waitForLoadState();
+
+			const code = await getCode(bearer_token, verificationData?.id);
+			if (!code) {
+				return;
+			}
+			console.log("################ Verificatin Code ################");
+			await page.focus('//input[@name="code"]');
+			await page.click('//input[@name="code"]');
+			await page.type('//input[@name="code"]', code, { delay: 100 });
+			await new Promise((r) => setTimeout(r, 2000));
+
+			await page
+				.locator(
+					`//button[@class="VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-INsAgc VfPpkd-LgbsSe-OWXEXe-dgl2Hf Rj2Mlf OLiIxf PDpWxe P62QJc LQeN7 xYnMae TrZEUc lw1w4b"]`
+				)
+				.nth(1)
+				.click();
+			await page.waitForLoadState();
+
+			await new Promise((r) => setTimeout(r, 2000));
+
+			await page
+				.locator(
+					`//button[@class="VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-INsAgc VfPpkd-LgbsSe-OWXEXe-dgl2Hf Rj2Mlf OLiIxf PDpWxe P62QJc LQeN7 xYnMae TrZEUc lw1w4b"]`
+				)
+				.nth(1)
+				.click();
+
+			await page.waitForLoadState();
+
+			await new Promise((r) => setTimeout(r, 2000));
+
+			const btn5 = await page.$(
+				"//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 qIypjc TrZEUc lw1w4b']"
+			);
+			btn5.click();
+
+			await page.waitForLoadState();
+
+			await new Promise((r) => setTimeout(r, 4000));
+
+			await page.evaluate(() => {
+				window.scrollTo(0, document.body.scrollHeight);
+			});
+			await new Promise((r) => setTimeout(r, 3000));
+			console.log("################ Agree Button ################");
+			const aggreeButton = await page.$(
+				"//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 qIypjc TrZEUc lw1w4b']"
+			);
+			await new Promise((r) => setTimeout(r, 2000));
+			aggreeButton.click();
+
+			await page.waitForLoadState();
+			await new Promise((r) => setTimeout(r, 10000));
+
+			return;
+		}
 
 		// await page.mouse.click(Math.floor(Math.random() * 100), Math.floor(Math.random() * 100))
 		console.log("################ First Name ################");
 		await page.focus("//*[@name='firstName']");
 		await page.click("//*[@name='firstName']");
-		await page.type("//*[@name='firstName']", "Gowri", { delay: 100 });
+		await page.type("//*[@name='firstName']", FirstName ? FirstName : "John", {
+			delay: 100,
+		});
 		await new Promise((r) => setTimeout(r, 2000));
 
 		console.log("################ Last Name ################");
 		await page.focus("//*[@name='lastName']");
 		await page.click("//*[@name='lastName']");
-		await page.type("//*[@name='lastName']", "Sankar", { delay: 100 });
+		await page.type("//*[@name='lastName']", LastName ? LastName : "Doe", {
+			delay: 100,
+		});
 		await new Promise((r) => setTimeout(r, 2000));
 
 		console.log("################  UserName ################");
-		const username = getRandomUsername();
+		const username = getRandomUsername(FirstName, LastName);
 		await page.focus("//*[@name='Username']");
 		await page.click("//*[@name='Username']");
 		await page.type("//*[@name='Username']", username, { delay: 100 });
@@ -199,20 +418,32 @@ const createEmail = async () => {
 		const NextButton = await page.$("//button");
 		NextButton.click();
 
+		const month = DateOfBirth ? moment(DateOfBirth).format("MM") : "7";
+		const day = DateOfBirth ? moment(DateOfBirth).format("DD") : "29";
+		const year = DateOfBirth ? moment(DateOfBirth).format("YYYY") : "2001";
+
 		await page.waitForLoadState();
 		console.log("################ Day ################");
 		await page.focus('//input[@name="day"]');
 		await page.click('//input[@name="day"]');
-		await page.type('//input[@name="day"]', "29", { delay: 100 });
+		await page.type('//input[@name="day"]', String(parseInt(day)), {
+			delay: 100,
+		});
 		await new Promise((r) => setTimeout(r, 2000));
 		console.log("################ Year ################");
 		await page.focus('//input[@name="year"]');
 		await page.click('//input[@name="year"]');
-		await page.type('//input[@name="year"]', "1997", { delay: 100 });
+		await page.type('//input[@name="year"]', String(parseInt(year)), {
+			delay: 100,
+		});
 		await new Promise((r) => setTimeout(r, 2000));
 		console.log("################ Gender and Month ################");
-		await page.locator('xpath=//select[@id="gender"]').selectOption("1");
-		await page.locator('xpath=//select[@id="month"]').selectOption("7");
+		await page
+			.locator('xpath=//select[@id="gender"]')
+			.selectOption(String(GenderId));
+		await page
+			.locator('xpath=//select[@id="month"]')
+			.selectOption(String(parseInt(month)));
 		const nxtButton = await page.$("//button");
 		nxtButton.click();
 
@@ -251,18 +482,37 @@ const createEmail = async () => {
 				console.log("Added the results to the report.");
 			}
 		);
+		await sql.connect(
+			"Server=salemseatsdev.database.windows.net;Database=salemseats-dev;user id=appuser;password=Salem@1234;Encrypt=true"
+		);
+		const result = await sql.query`UPDATE [dbo].[GoogleEmails]
+											SET IsCreated = 1,
+											Username=${username},
+											MobileNumber=+1${verificationData?.number},
+											Password=${password},
+											CreatedDate=${moment().format("YYYY-MM-DD HH:mm:ss")}
+		  									WHERE Id = ${Id}`;
 		await browser.close();
 	} catch (error) {
 		console.error(error.message);
+		await browser.close();
 	}
 };
 
-(async () => {
-	let count = 0;
-	while (true) {
-		if (count === MAX_EMAILS) {
-			break;
-		}
-		await createEmail();
-	}
-})();
+exports.CreateEmailWithPlayWright = createEmail;
+
+// (async () => {
+// 	let count = 0;
+// 	while (true) {
+// 		if (count === MAX_EMAILS) {
+// 			break;
+// 		}
+// 		await createEmail({
+// 			firstName: "",
+// 			lastName: "",
+// 			username: "",
+// 			dob: "",
+// 			gender: "",
+// 		});
+// 	}
+// })();
