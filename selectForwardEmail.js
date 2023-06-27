@@ -15,14 +15,14 @@ const { firefox } = require("playwright");
 
 	await page.goto("https://mail.google.com");
 	await page.waitForLoadState();
-	await page.type('input[type="email"]', "gowri.sankar.1119315864412", {
+	await page.type('input[type="email"]', "gowri.sankar.71779944667", {
 		delay: 100,
 	});
 	await page.locator("#identifierNext >> button").click();
 
 	await page.waitForLoadState();
 	await new Promise((r) => setTimeout(r, 5000));
-	await page.type('#password >> input[type="password"]', "BXuolIWO");
+	await page.type('#password >> input[type="password"]', "pKNuMLaW");
 	await page.locator("button >> nth=1").click();
 	await page.waitForLoadState();
 

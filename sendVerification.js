@@ -15,18 +15,34 @@ const { firefox } = require("playwright");
 
 	await page.goto("https://mail.google.com");
 	await page.waitForLoadState();
-	await page.type('input[type="email"]', "gowri.sankar.1119315864412", {
+	await page.type('input[type="email"]', "gowri.sankar.71779944667", {
 		delay: 100,
 	});
 	await page.locator("#identifierNext >> button").click();
 
 	await page.waitForLoadState();
 	await new Promise((r) => setTimeout(r, 5000));
-	await page.type('#password >> input[type="password"]', "BXuolIWO");
+	await page.type('#password >> input[type="password"]', "pKNuMLaW");
 	await page.locator("button >> nth=1").click();
 	await page.waitForLoadState();
 
 	await new Promise((r) => setTimeout(r, 10000));
+	const isVisible = await page
+		.locator(
+			`//button[@class="VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-dgl2Hf ksBjEc lKxP2d LQeN7 k97fxb yu6jOd"]`
+		)
+		.nth(0)
+		.isVisible();
+	if (isVisible) {
+		await page
+			.locator(
+				`//button[@class="VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-dgl2Hf ksBjEc lKxP2d LQeN7 k97fxb yu6jOd"]`
+			)
+			.nth(0)
+			.click();
+		await page.waitForLoadState();
+		await new Promise((r) => setTimeout(r, 10000));
+	}
 
 	await page.locator("a.FH").click();
 
@@ -60,7 +76,7 @@ const { firefox } = require("playwright");
 
 	await page.focus("div.PN input");
 	await page.click("div.PN input");
-	await page.type("div.PN input", "gowri.sankar.154969228349@gmail.com", {
+	await page.type("div.PN input", "forwarding@salemseats.com", {
 		delay: 100,
 	});
 	await new Promise((r) => setTimeout(r, 5000));

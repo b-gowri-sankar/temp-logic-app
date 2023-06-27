@@ -1,0 +1,55 @@
+{
+  "cookies": [
+    {
+      "name": "CheckConnectionTempCookie354",
+      "value": "492584",
+      "domain": "accounts.youtube.com",
+      "path": "/accounts",
+      "expires": 1683891640,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "None"
+    },
+    {
+      "name": "OTZ",
+      "value": "7026461_34_34__34_",
+      "domain": "accounts.google.com",
+      "path": "/",
+      "expires": 1686483631,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__Host-GAPS",
+      "value": "1:Cql27KbQB_f8lZxyeG8RAacMVZX7nQ:w3xMuwIxtz_JWVr_",
+      "domain": "accounts.google.com",
+      "path": "/",
+      "expires": 1746963636,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "NID",
+      "value": "511=kwWabyH9k-UYU7vyfAlNJgvL2O-0kKILem_A3ntpFPfA3SWUsi0zOEDyNd3m0j6ZXQQeNjRC0mjbdbAj3RSkjmkUjYOkyKUZXCSEC_VmyguiTT6OgzGfsrnljoEs5olid6TrVFLQSfnBrawIQFxsneRU5OHyWRlYmNHg-MTQf2A",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1699702836,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "COMPASS",
+      "value": "gmail=Cq4BAAlriVdvQCi64DBBk4yvt1BU8fLuS5weK0L0CQFrm-jfrVMmlfNAFQQkK3vQMJjD_IdAMnmT0e2L9D1sl0shm8WVhRfqsk5ViDClVQqASemcSXSRLggDh2vVz7kfFUt4l79ZLLK3v3LFdHu8ompGrrXXGe1vGSpdtB4q4L-nw0N4Gh71EbstjBzDfzJCsCXcJImbRR2bph09k9T79lKtmfSIMJaqV7Gmlsoi84npENHn-KIGGtYBAAlriVdsD6_QKEHchWFoyXoZsTSedZp146hcIydv92Kjg0lY2Y80VDTp_QPXdBSHZH50v9-B6ZdsrElW8XvJt4B2Uba7mUqK6RDmEiLl1fwanS1Vn83vCRywxaxhwZDwibm5d-xSp0x0BxhL4ACPEVSyOS8sF9CtV-8AqdKvDdV9qti29JsN2LVmDvspLAw8tMvmgEn_GraxLOgsHQ7OxE5k6r_NkNlyvBks1qIQIkeuZEOU5h17dWT9YDqhKGgKwzcJ-b_tPDOG-oKWpdsIrjT2oBDetw",
+      "domain": "mail.google.com",
+      "path": "/mail",
+      "expires": 1684755638,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "origins": []
+}

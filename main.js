@@ -151,7 +151,8 @@ const getVerficationData = async (bearer_token) => {
 		return "";
 	} catch (error) {
 		console.error(error);
-		return "";
+		const request = createRequestSMSMAN();
+		return request;
 	}
 };
 
@@ -356,10 +357,12 @@ const createEmail = async ({
 		await new Promise((r) => setTimeout(r, 2000));
 
 		console.log("################  UserName ################");
-		const username = getRandomUsername(FirstName, LastName);
+		let username = getRandomUsername(FirstName, LastName);
 		await page.focus("//*[@name='Username']");
 		await page.click("//*[@name='Username']");
-		await page.type("//*[@name='Username']", username, { delay: 100 });
+		await page.type("//*[@name='Username']", "sankaryadavrgukt", {
+			delay: 100,
+		});
 		await new Promise((r) => setTimeout(r, 2000));
 		console.log("username:", username);
 
@@ -376,6 +379,48 @@ const createEmail = async ({
 		await page.click("//*[@name='ConfirmPasswd']");
 		await page.type("//*[@name='ConfirmPasswd']", password, { delay: 100 });
 		await new Promise((r) => setTimeout(r, 2000));
+
+		const isVisilbe = await page
+			.locator("//div[@class='o6cuMc Jj6Lae']")
+			.isVisible();
+
+		if (isVisilbe) {
+			const errorTextContent = await page
+				.locator("//div[@class='o6cuMc Jj6Lae']")
+				.nth(0)
+				.textContent();
+
+			if (
+				errorTextContent.includes("username") &&
+				errorTextContent.includes("taken")
+			) {
+				await new Promise((r) => setTimeout(r, 3000));
+				let buttonText = await page
+					.locator("//button[@class='fBRZbb TrZEUc']")
+					.nth(10)
+					.isVisible();
+				console.log(buttonText);
+				if (buttonText) {
+					username = await page
+						.locator("//button[@class='fBRZbb TrZEUc']")
+						.nth(10)
+						.textContent();
+					await page
+						.locator("//button[@class='fBRZbb TrZEUc']")
+						.nth(10)
+						.click();
+				} else {
+					await page.focus("//*[@name='Username']");
+					await page.click("//*[@name='Username']");
+					await page.fill("//*[@name='Username']", "", { delay: 100 });
+					username = getRandomUsername(FirstName, LastName);
+					await page.type("//*[@name='Username']", username, { delay: 100 });
+				}
+			}
+		}
+
+		console.log(username);
+		return;
 
 		const nextButton = await page.$(
 			"//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 qIypjc TrZEUc lw1w4b']"
@@ -426,24 +471,16 @@ const createEmail = async ({
 		console.log("################ Day ################");
 		await page.focus('//input[@name="day"]');
 		await page.click('//input[@name="day"]');
-		await page.type('//input[@name="day"]', String(parseInt(day)), {
-			delay: 100,
-		});
+		await page.type('//input[@name="day"]', "29", { delay: 100 });
 		await new Promise((r) => setTimeout(r, 2000));
 		console.log("################ Year ################");
 		await page.focus('//input[@name="year"]');
 		await page.click('//input[@name="year"]');
-		await page.type('//input[@name="year"]', String(parseInt(year)), {
-			delay: 100,
-		});
+		await page.type('//input[@name="year"]', "1997", { delay: 100 });
 		await new Promise((r) => setTimeout(r, 2000));
 		console.log("################ Gender and Month ################");
-		await page
-			.locator('xpath=//select[@id="gender"]')
-			.selectOption(String(GenderId));
-		await page
-			.locator('xpath=//select[@id="month"]')
-			.selectOption(String(parseInt(month)));
+		await page.locator('xpath=//select[@id="gender"]').selectOption("1");
+		await page.locator('xpath=//select[@id="month"]').selectOption("7");
 		const nxtButton = await page.$("//button");
 		nxtButton.click();
 
@@ -482,22 +519,47 @@ const createEmail = async ({
 				console.log("Added the results to the report.");
 			}
 		);
-		await sql.connect(
-			"Server=salemseatsdev.database.windows.net;Database=salemseats-dev;user id=appuser;password=Salem@1234;Encrypt=true"
-		);
-		const result = await sql.query`UPDATE [dbo].[GoogleEmails]
-											SET IsCreated = 1,
-											Username=${username},
-											MobileNumber=+1${verificationData?.number},
-											Password=${password},
-											CreatedDate=${moment().format("YYYY-MM-DD HH:mm:ss")}
-		  									WHERE Id = ${Id}`;
+		// await sql.connect(
+		// 	"Server=salemseatsdev.database.windows.net;Database=salemseats-dev;user id=appuser;password=Salem@1234;Encrypt=true"
+		// );
+		// const result = await sql.query`UPDATE [dbo].[GoogleEmails]
+		// 									SET IsCreated = 1,
+		// 									Username=${username},
+		// 									MobileNumber=+1${verificationData?.number},
+		// 									Password=${password},
+		// 									CreatedDate=${moment().format("YYYY-MM-DD HH:mm:ss")}
+		//   									WHERE Id = ${Id}`;
 		await browser.close();
 	} catch (error) {
 		console.error(error.message);
 		await browser.close();
 	}
 };
+createEmail({
+	id: 39,
+	firstName: "Anthony",
+	lastName: "Wilder",
+	genderId: 1,
+	genderName: "Male",
+	username: "antwilderr5",
+	password: "Tickets123!",
+	mobileNumber: null,
+	recoveryMail: "forwarding@salemseats.com",
+	dateOfBirth: null,
+	isVerificationLinkSent: false,
+	isVerificationComplete: false,
+	isForwardingEnabled: false,
+	isCreated: null,
+	createdDate: null,
+	insertedOn: "2023-05-12T17:37:53.54",
+	insertedBy: "demitri@salemseats.com",
+	updatedOn: "2023-05-16T09:16:18.973",
+	excelId: null,
+	createEmailsAttempts: 2,
+	verificationLinkSentAttempts: 0,
+	verificationCompleteAttempts: 0,
+	forwardingAttempts: 0,
+});
 
 exports.CreateEmailWithPlayWright = createEmail;
 

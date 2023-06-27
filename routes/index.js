@@ -1,8 +1,8 @@
 const router = require("express").Router();
-const { createEmail } = require("../controllers/gmailcontroller");
+const { emailData } = require("../controllers/apiData");
 //@desc Create Gmails
 //GET /createGmails
 
-router.get("/createGmails", createEmail);
+router.post("/emailData", emailData)
 
 module.exports = router;

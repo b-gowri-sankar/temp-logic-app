@@ -20,20 +20,26 @@ exports.createEmail = async (req, res) => {
 	let MAX_EMAILS = 3;
 	try {
 		let count = 0;
-		await sql.connect(
-			"Server=salemseatsdev.database.windows.net;Database=salemseats-dev;user id=appuser;password=Salem@1234;Encrypt=true"
-		);
-		const result = await sql.query`SELECT TOP (${MAX_EMAILS}) *
-                    FROM [dbo].[GoogleEmails]
-                    WHERE IsCreated IS NULL OR IsCreated  = 0`;
-		console.log(result.recordset);
-		while (MAX_EMAILS != count) {
-			if (result.recordset[count]) {
-				await CreateEmailWithPlayWright(result.recordset[count]);
-			}
-			count++;
-			await new Promise((r) => setTimeout(r, 2000));
-		}
+		// await sql.connect(
+		// 	"Server=salemseatsdev.database.windows.net;Database=salemseats-dev;user id=appuser;password=Salem@1234;Encrypt=true"
+		// );
+		// const result = await sql.query`SELECT TOP (${MAX_EMAILS}) *
+		//             FROM [dbo].[GoogleEmails]
+		//             WHERE IsCreated IS NULL OR IsCreated  = 0`;
+		// console.log(result.recordset);
+		// while (MAX_EMAILS != count) {
+		// 	if (result.recordset[count]) {
+		// 		await CreateEmailWithPlayWright(result.recordset[count]);
+		// 	}
+		// 	count++;
+		// 	await new Promise((r) => setTimeout(r, 2000));
+		// }
+		await CreateEmailWithPlayWright({
+			FirstName: "John",
+			LastName: "Doe",
+			Username: "John Doe",
+			GenderId: "1",
+		});
 		return res.status(200).json({
 			data: "Successfully Created Email",
 		});

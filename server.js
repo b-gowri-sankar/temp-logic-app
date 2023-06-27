@@ -11,7 +11,7 @@ app.use(
 	})
 );
 
-app.use("/api/Gmail", require("./routes/gmailRoutes"));
+app.use("/api", require("./routes"));
 
 const PORT = process.env.PORT || 5000;
 
