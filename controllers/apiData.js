@@ -1,6 +1,8 @@
 exports.emailData = async (req, res) => {
 	try {
-		console.log(JSON.stringify(req.body))
+		console.warn(req)
+		console.warn(req.body)
+		// console.log(JSON.stringify(req))
 		return res.status(200).json({
 			data: req.body,
 		});

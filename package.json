@@ -18,6 +18,7 @@
     "express": "^4.18.2",
     "google-auth-library": "^8.8.0",
     "googleapis": "^105.0.0",
+    "lokijs": "^1.5.12",
     "moment": "^2.29.4",
     "mssql": "^9.1.1",
     "playwright": "^1.32.1",
