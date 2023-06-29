@@ -2,7 +2,7 @@ exports.emailData = async (req, res) => {
 	try {
 		console.warn(req)
 		console.warn(req.body)
-		let msq = req.body;
+		let msg = req.body;
 		let value = msg.match(/(^|[^\d])(\d{6})([^\d]|$)/);
 		if(value !== null){
 			console.log(value);
