@@ -40,7 +40,7 @@ router.get("/fileupload", (req, res) => {
 });
 
 router.post("/post-formdata", (req, res) => {
-	console.log(req.body.latitude);
+	console.log(req.body);
 	return res.status(200).json("data is sent successfully");
 });
 
