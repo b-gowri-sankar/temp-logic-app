@@ -41,6 +41,8 @@ router.get("/fileupload", (req, res) => {
 
 router.post("/post-formdata", (req, res) => {
 	console.log(req.body);
+	const size = Buffer.byteLength(JSON.stringify(req.body))
+	console.log(size)
 	return res.status(200).json("data is sent successfully");
 });
 
